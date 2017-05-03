@@ -9,7 +9,19 @@
 #define	__OUTPUTS_H__
 
 #include "io.h"
+/**
+ * Aciona saídas conforme o protocolo recebido
+ * 
+ * @param[in] out Protocolo para verificação da saída correspondente
+ */
+void SetOutputs(char out[]);
 
-void Rele_Action(BYTE rele, BYTE state);
+/**
+ * Verifica se alarme esta ativado
+ * 
+ * @return Valor de Alarme [ON/OFF]
+ */
+BYTE Alarme_Is_ON(void);
+
 #endif	/* OUTPUTS_H */
 

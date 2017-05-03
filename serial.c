@@ -10,6 +10,9 @@ void Serial_Init(void) {
             & USART_BRGH_HIGH
             & USART_ADDEN_OFF,
             25); //Baudrate 19200 ->to comunicate with zigbee    
+    __delay_ms(80);
+    __delay_ms(80);
+    __delay_ms(80);
 }
 
 void Serial_Flag_TX(void){

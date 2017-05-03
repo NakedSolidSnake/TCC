@@ -30,80 +30,40 @@ typedef unsigned int UINT;
 typedef unsigned long ULONG;
 
 /* Pins to control LCD messages*/
-#define LCD_ENABLE  LATEbits.LATE1
-#define LCD_RS      LATEbits.LATE2
-#define LCD_PORT    PORTD
-
-/* Pins to control RELES OUTPUT */
-#define RELE_R1 LATCbits.LATC0
-#define RELE_R2 LATEbits.LATE0
 
 /* Pins Keyboard*/
-#define KBD_DOWN    PORTBbits.RB0
-#define KBD_UP      PORTBbits.RB1
-#define KBD_ENTER   PORTBbits.RB2
-#define KBD_BACK    PORTBbits.RB3
+#define KBD_DOWN    PORTDbits.RD0
+#define KBD_UP      PORTDbits.RD1
+#define KBD_ENTER   PORTDbits.RD2
+#define KBD_BACK    PORTDbits.RD3
 
 /* INPUTS */
-#define INN1 PORTBbits.RB4
-#define INN2 PORTBbits.RB5
-#define INN3 PORTAbits.RA5
+#define INN1 PORTBbits.RB5
+#define INN2 PORTBbits.RB6
+#define INN3 PORTBbits.RB7
+
+#define PIR_SENSOR PORTBbits.RB4
+
 
 /* OUTPUTS */
-#define OUT1 PORTCbits.RC0
-#define OUT2 PORTEbits.RE0
-#define OUT3 PORTCbits.RC2 
+#define OUT1 LATAbits.LATA1   //Dedicate to INN1
+#define OUT2 LATAbits.LATA2   //Dedicate to INN2
+#define OUT3 LATAbits.LATA3   //Dedicate to INN3
 
-#define LED  LATBbits.LATB6
+#define OUT4 LATAbits.LATA5   //uso Geral
+#define OUT5 LATEbits.LATE0   //uso Geral
+#define OUT6 LATEbits.LATE1   //uso Geral
+#define OUT7 LATEbits.LATE2   //uso Geral
+#define OUT8 LATCbits.LATC0   //uso Geral
 
-/*
- Pins USED
- * PORTA
- * RA0 - NOT USED
- * RA1 - NOT USED
- * RA2 - NOT USED
- * RA3 - NOT USED
- * RA4 - NOT USED
- * RA5 - NOT USED (INN3)
- * RA6 - NOT USED
- * 
- * PORTB
- * RB0 - KBD_DOWN
- * RB1 - KBD_UP
- * RB2 - KBD_ENTER
- * RB3 - KBD_BACK
- * RB4 - NOT USED (INN1)
- * RB5 - NOT USED (INN2)
- * RB6 - NOT USED
- * RB7 - NOT USED
- * 
- * PORTC
- * RC0 - RELE_1
- * RC1 - NOT USED
- * RC2 - NOT USED
- * RC3 - NOT USED 
- * RC4 - NOT USED
- * RC5 - NOT USED
- * RC6 - TX
- * RC7 - RX (interruption)
- * 
- * PORTD
- * RD0 - DISPLAy DATA BITS D0
- * RD1 - DISPLAy DATA BITS D1
- * RD2 - DISPLAy DATA BITS D2
- * RD3 - DISPLAy DATA BITS D3
- * RD4 - DISPLAy DATA BITS D4
- * RD5 - DISPLAy DATA BITS D5
- * RD6 - DISPLAy DATA BITS D6
- * RD7 - DISPLAy DATA BITS D7
- * 
- * PORTE 
- * RE0 - RELE_2
- * RE1 - DISPLAY ENABLE
- * RE2 - DISPLAY RS
- * RE3 - NOT USED
+#define AUDIO  LATCbits.LATC1
+#define BUZZER LATCbits.LATC2
+
+
+
+/**
+ * Configura pinos como IO's Digitais [Entradas e Saídas]
  */
-
 void SetDirection(void);
 
 #endif //__IO_H__

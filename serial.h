@@ -11,9 +11,15 @@
 #include "io.h"
 #include <usart.h>
 
+/**
+ * Inicia Porta Serial com Baud=19200, StopBit=1, Paridade=None 
+ */
 void Serial_Init(void);
-void Serial_Flag_TX(void);
 
+/**
+ * Aguarda Fim de Transmissão Serial
+ */
+void Serial_Flag_TX(void);
 
 #endif	/* SERIAL_H */
 

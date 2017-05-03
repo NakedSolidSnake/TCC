@@ -2,10 +2,9 @@
 #include "eeprom.h"
 #include <string.h>
 #include <stdio.h>
-#include <string.h>
 #include <usart.h>
 
-#define DATASAVED_ADDR    0x10
+
 #define ID_ADDR           0x02
 #define SOURCE_ADDR       0x03
 #define DESTIN_ADDR       0x04
@@ -21,13 +20,15 @@
 
 #define DATA_WRITED       0x99
 
-#define DELAY_TIME        0x0A //10d
+#define DELAY_TIME        30 
 
-BYTE destination_adress;
-BYTE source_adress;
-BYTE id;
-BYTE channel;
+BYTE volatile destination_adress;
+BYTE volatile source_adress;
+BYTE volatile id;
+BYTE volatile channel;
+BYTE volatile saved;
 char param1, param2, param3;
+static char buff[10];
 
 /*
                         Zigbee Protocol
@@ -39,52 +40,48 @@ void ConfigBee(void) {
     Serial_Flag_TX();
     putsUSART((char *) "+++\r"); //start the configuration
     __delay_ms(DELAY_TIME);
+    sprintf(buff, "ATDA %03d\r", destination_adress);
     Serial_Flag_TX();
-    putsUSART((char *) "ATMSE 0\r"); //Turn off report mode
+    putrsUSART(buff);
+    __delay_ms(DELAY_TIME);
+    putrsUSART(buff);
+    __delay_ms(DELAY_TIME);
+    sprintf(buff, "ATSA %03d\r", source_adress);
+    putrsUSART(buff);
+    __delay_ms(DELAY_TIME);
+    sprintf(buff, "ATID %03d\r", id);
+    putrsUSART(buff);
+    __delay_ms(DELAY_TIME);
+    sprintf(buff, "ATCH %02d\r", channel);
+    Serial_Flag_TX();
+    putrsUSART(buff);
     __delay_ms(DELAY_TIME);
     Serial_Flag_TX();
-    putsUSART((char *) "ATNR 0\r"); //Retransmission time = 0
+    putrsUSART(buff);
     __delay_ms(DELAY_TIME);
     Serial_Flag_TX();
-    putsUSART((char *) "ATAE 0\r"); //Acknowledge off
+    putrsUSART(buff);
     __delay_ms(DELAY_TIME);
     Serial_Flag_TX();
-    putsUSART((char *) "ATRO 100\r"); //Time out to send the package
-    __delay_ms(DELAY_TIME);
-    Serial_Flag_TX();
-    putsUSART((char *) "ATSA 10\r"); //Source address "who sends the message"
-    __delay_ms(DELAY_TIME);
-    Serial_Flag_TX();
-    putsUSART((char *) "ATDA 1\r"); //Destination address "who will receive the message"
-    __delay_ms(DELAY_TIME);
-    Serial_Flag_TX();
-    putsUSART("ATID 1\r"); // Network ID
-    __delay_ms(DELAY_TIME);
-    Serial_Flag_TX();
-    putsUSART("ATCH 11\r"); //Channel where the place what will occurs the connection
-    __delay_ms(DELAY_TIME);
-    Serial_Flag_TX();
-    putsUSART((char *) "ATAPI 1\r"); //Mode API and Protocol 10 active    
+    putsUSART((char *) "ATWR\r"); //ends the configuration
     __delay_ms(DELAY_TIME);
     Serial_Flag_TX();
     putsUSART((char *) "ATCN\r"); //ends the configuration
     __delay_ms(DELAY_TIME);
-    Serial_Flag_TX();
-
 }
 
-void FrameTest(void) {
-    putsUSART((char *) "*10010001001110OK!907#");
-}
+//void FrameTest(void) {
+//    putsUSART((char *) "*10010001001110OK!907#");
+//}
 
 char *Protocols(char rx_tx) {
     unsigned char *protocols[] = {
         "[INN1]", //0
         "[INN2]", //1
         "[INN3]", //2
-        "[OUT1]", //3
-        "[OUT2]", //4
-        "[OUT3]" //5
+        "[SENO]", //3
+        "[SESI]", //4
+        "[ALAM]" //5
     };
     switch (rx_tx) {
         case M_INN1:
@@ -121,17 +118,32 @@ void SendMessage(unsigned char message_type) {
             , destination_adress, id, channel);
     switch (message_type) {
         case 0:
-            strcat(sendmessage,Protocols(0));
-            strcat(sendmessage, CheckSum(sendmessage));             
+            strcat(sendmessage, Protocols(0));
+            strcat(sendmessage, CheckSum(sendmessage));
             break;
 
         case 1:
-            strcat(sendmessage,Protocols(1));
+            strcat(sendmessage, Protocols(1));
             strcat(sendmessage, CheckSum(sendmessage));
             break;
 
         case 2:
-            strcat(sendmessage,Protocols(2));
+            strcat(sendmessage, Protocols(2));
+            strcat(sendmessage, CheckSum(sendmessage));
+            break;
+
+        case 3:
+            strcat(sendmessage, Protocols(3));
+            strcat(sendmessage, CheckSum(sendmessage));
+            break;
+
+        case 4:
+            strcat(sendmessage, Protocols(4));
+            strcat(sendmessage, CheckSum(sendmessage));
+            break;
+
+        case 5:
+            strcat(sendmessage, Protocols(5));
             strcat(sendmessage, CheckSum(sendmessage));
             break;
     }
@@ -139,7 +151,6 @@ void SendMessage(unsigned char message_type) {
 }
 
 BYTE GetID() {
-
     return id;
 }
 
@@ -158,39 +169,70 @@ BYTE GetChannel() {
 void SetID(BYTE netId) {
     id = netId;
     E2promWrite(ID_ADDR, id);
+    SetBeeChange(id, UBEE_ID);
 }
 
 void SetSourceAddress(BYTE source) {
     source_adress = source;
     E2promWrite(SOURCE_ADDR, source_adress);
+    SetBeeChange(source, UBEE_SOURCE_ADDR);
 }
 
 void SetDestinationAddress(BYTE destination) {
     destination_adress = destination;
     E2promWrite(DESTIN_ADDR, destination_adress);
+    SetBeeChange(destination, UBEE_DEST_ADDR);
 }
 
 void SetChannel(BYTE ch) {
     channel = ch;
     E2promWrite(CHANNEL_ADDR, channel);
+    SetBeeChange(ch, UBEE_CHANNEL);
+}
+
+void SetFlagWritted(BYTE s) {
+    saved = s;
+    E2promWrite(DATASAVED_ADDR, saved);
+}
+
+void SetBeeChange(BYTE change, UBEE_PARAM param) {
+    Serial_Flag_TX();
+    putsUSART((char *) "+++\r"); //start the configuration
+    __delay_ms(DELAY_TIME);
+    switch (param) {
+        case UBEE_DEST_ADDR:
+            sprintf(buff, "ATDA %03d\r", change);
+            break;
+        case UBEE_SOURCE_ADDR:
+            sprintf(buff, "ATSA %03d\r", change);
+            break;
+        case UBEE_CHANNEL:
+            sprintf(buff, "ATCH %02d\r", change);
+            break;
+        case UBEE_ID:
+            sprintf(buff, "ATID %03d\r", change);
+            break;
+    }
+    Serial_Flag_TX();
+    putrsUSART(buff);
+    __delay_ms(DELAY_TIME);
+    putsUSART((char *) "ATCN\r"); //ends the configuration
+    __delay_ms(DELAY_TIME);
 }
 
 void eeprom_init(void) {
-    if (E2promRead(DATASAVED_ADDR) != 0x99) {
-        destination_adress = 150;
-        source_adress = 100;
-        id = 8;
-        channel = 18;
+    saved = E2promRead(DATASAVED_ADDR);
+    if (saved != DATA_WRITED) {
+        destination_adress = 1;
+        source_adress = 10;
+        id = 1;
+        channel = 11;
     } else {
         destination_adress = E2promRead(DESTIN_ADDR);
         source_adress = E2promRead(SOURCE_ADDR);
         id = E2promRead(ID_ADDR);
         channel = E2promRead(CHANNEL_ADDR);
     }
-}
-
-void SetFlagWritted() {
-    E2promWrite(DATASAVED_ADDR, DATA_WRITED);
 }
 
 char *CheckSum(char *data) {
@@ -207,14 +249,14 @@ char *CheckSum(char *data) {
     //Split the result	
     Convert(sum);
     //Join result with configuration
-    sprintf(buf, "%d%d%d#", param1, param2, param3);    
+    sprintf(buf, "%d%d%d#", param1, param2, param3);
     return buf;
 }
 
 void Convert(int convert) {
     param1 = convert / 100;
     convert %= 100;
-    param2 = convert / 10;
+    param2 = (convert / 10);
     convert %= 10;
     param3 = convert;
 }
