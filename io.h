@@ -32,10 +32,10 @@ typedef unsigned long ULONG;
 /* Pins to control LCD messages*/
 
 /* Pins Keyboard*/
-#define KBD_DOWN    PORTDbits.RD0
-#define KBD_UP      PORTDbits.RD1
-#define KBD_ENTER   PORTDbits.RD2
-#define KBD_BACK    PORTDbits.RD3
+#define KBD_BACK   PORTDbits.RD0  
+#define KBD_ENTER  PORTDbits.RD1
+#define KBD_DOWN   PORTDbits.RD2
+#define KBD_UP     PORTDbits.RD3
 
 /* INPUTS */
 #define INN1 PORTBbits.RB5

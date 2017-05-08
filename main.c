@@ -52,7 +52,7 @@ void interrupt_en(char mode);
 
 
 void main() {
-    unsigned int readAdc, temp;
+    unsigned int readAdc, temp, time;
     char buf[15], buf_temp[15];
     RCONbits.POR = 1;
     SetDirection();
@@ -97,9 +97,7 @@ void main() {
                 Menu();
                 interrupt_en(1);
             }
-
         }
-
 
         if (!KBD_UP) {
             __delay_ms(50);
@@ -115,7 +113,6 @@ void main() {
                 OUT8 = ~OUT8;
             }
         }
-
 
         if (!INN1) {
             __delay_ms(50);
@@ -133,7 +130,6 @@ void main() {
             }
         }
 
-
         if (!INN3) {
             __delay_ms(50);
             if (!INN3) {
@@ -141,12 +137,7 @@ void main() {
                 SendMessage(2);
             }
         }
-
-        if (PIR_SENSOR) {
-            OUT8 = HIGH;
-        } else {
-            OUT8 = LOW;
-        }
+        
         if (Alarme_Is_ON() && PIR_SENSOR) {
             alarm_set = TRUE;
         }
@@ -182,13 +173,15 @@ void main() {
             memset(data, 0, sizeof (unsigned char)*25);
         }
 
-        readAdc = 500 * readAdc;
+        readAdc = 5 * readAdc * 100;
         temp = readAdc / 1023;
-        sprintf(buf, "   TEMP:%04uC", temp);
-        if (strcmp(buf, buf_temp) != 0) {
+        sprintf(buf, "TEMP:%04uC", temp);
+        if (strcmp(buf, buf_temp) != 0 && (time >= 1500) ) {
             Lcd_Printf(buf, LCD_LINE_2);
             strcpy(buf_temp, buf);
+            time = 0;
         }
+        time++;
 
     }//main while
 }
